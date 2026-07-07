@@ -1,19 +1,24 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.database.database import get_db
+from app.schemas.vehicle import VehicleResponse
+from app.services.vehicle_service import get_vehicle_by_number
 
 router = APIRouter(
     prefix="/vehicle",
-    tags=["Vehicle"]
+    tags=["Vehicle"],
 )
 
 
-@router.get("/")
-def get_vehicle():
-    return {
-        "status": "success",
-        "message": "Vehicle API is working!",
-        "vehicle": {
-            "vehicle_no": "OD02AB1234",
-            "owner_name": "ABC Logistics",
-            "driver_name": "Ramesh Kumar"
-        }
-    }
+@router.get("/{vehicle_no}", response_model=VehicleResponse)
+def search_vehicle(vehicle_no: str, db: Session = Depends(get_db)):
+    vehicle = get_vehicle_by_number(db, vehicle_no)
+
+    if vehicle is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Vehicle not found",
+        )
+
+    return vehicle

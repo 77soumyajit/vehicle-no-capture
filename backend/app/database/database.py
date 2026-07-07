@@ -1,18 +1,25 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core.config import DATABASE_URL
 
-engine = None
-SessionLocal = None
+engine = create_engine(
+    DATABASE_URL,
+    echo=True  # Shows SQL queries in the terminal
+)
 
-if DATABASE_URL:
-    engine = create_engine(DATABASE_URL)
-
-    SessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine,
-    )
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
 
 Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
