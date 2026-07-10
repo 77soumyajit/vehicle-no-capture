@@ -4,11 +4,15 @@ import api from "../services/api";
 
 import SearchBox from "../components/SearchBox";
 import VehicleCard from "../components/VehicleCard";
+import GatePassCard from "../components/GatePassCard";
 
 function Home() {
 
     const [vehicle, setVehicle] = useState(null);
     const [error, setError] = useState("");
+    const [gatePass, setGatePass] = useState(null);
+
+    const [loading, setLoading] = useState(false);
 
     const searchVehicle = async (vehicleNo) => {
 
@@ -25,6 +29,40 @@ function Home() {
 
             setVehicle(null);
             setError("Vehicle not found.");
+
+        }
+
+    };
+    const generateGatePass = async (vehicleId) => {
+
+        try {
+
+            setLoading(true);
+
+            const response = await api.post(
+                "/gate-pass/generate",
+                {
+                    vehicle_id: vehicleId
+                }
+            );
+
+            setGatePass(
+                response.data
+            );
+
+        }
+
+        catch (error) {
+
+            alert(
+                "Unable to generate gate pass."
+            );
+
+        }
+
+        finally {
+
+            setLoading(false);
 
         }
 
@@ -59,6 +97,17 @@ function Home() {
 
                     <VehicleCard
                         vehicle={vehicle}
+                        onGenerate={generateGatePass}
+                    />
+                    {
+                        loading &&
+                        <div className="alert alert-info mt-3">
+                            Generating Gate Pass...
+                        </div>
+                    }
+
+                    <GatePassCard
+                        gatePass={gatePass}
                     />
 
                 </div>

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.vehicle import router as vehicle_router
-from app.database.database import Base, engine
+from app.api.gate_pass import router as gate_pass_router
 
 # Import models so SQLAlchemy registers them
 import app.models
@@ -20,10 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Register Routers
 app.include_router(vehicle_router)
-
-# Create all tables
-Base.metadata.create_all(bind=engine)
+app.include_router(gate_pass_router)
 
 
 @app.get("/")

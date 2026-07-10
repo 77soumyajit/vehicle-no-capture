@@ -1,4 +1,4 @@
-function VehicleCard({ vehicle }) {
+function VehicleCard({ vehicle, onGenerate }) {
 
     if (!vehicle) return null;
 
@@ -34,6 +34,7 @@ function VehicleCard({ vehicle }) {
 
                 <button
                     className="btn btn-success w-100 mt-3"
+                    onClick={() => onGenerate(vehicle.id)}
                 >
                     Generate Gate Pass
                 </button>
