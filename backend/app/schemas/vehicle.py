@@ -10,3 +10,10 @@ class VehicleResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class VehicleCreate(BaseModel):
+    vehicle_no: str
+    owner_name: str
+    driver_name: str
+    company_name: str
+    vehicle_type: str

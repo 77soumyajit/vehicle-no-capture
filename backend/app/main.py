@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.vehicle import router as vehicle_router
 from app.api.gate_pass import router as gate_pass_router
-
+from app.api.upload import router as upload_router
+from app.api.ocr import router as ocr_router
 # Import models so SQLAlchemy registers them
 import app.models
 
@@ -30,3 +31,6 @@ def home():
     return {
         "message": "Vehicle Gate Pass API Running"
     }
+
+app.include_router(upload_router)
+app.include_router(ocr_router)
