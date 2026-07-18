@@ -20,3 +20,14 @@ class VehicleRepository:
             .filter(Vehicle.id == vehicle_id)
             .first()
         )
+
+    @staticmethod
+    def create(db: Session, vehicle: Vehicle):
+
+        db.add(vehicle)
+
+        db.commit()
+
+        db.refresh(vehicle)
+
+        return vehicle

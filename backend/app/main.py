@@ -5,6 +5,7 @@ from app.api.vehicle import router as vehicle_router
 from app.api.gate_pass import router as gate_pass_router
 from app.api.upload import router as upload_router
 from app.api.ocr import router as ocr_router
+from app.api.process_vehicle import router as process_vehicle_router
 # Import models so SQLAlchemy registers them
 import app.models
 
@@ -34,3 +35,4 @@ def home():
 
 app.include_router(upload_router)
 app.include_router(ocr_router)
+app.include_router(process_vehicle_router)
