@@ -1,121 +1,123 @@
 import re
 
+from app.utils.indian_plate_validator import IndianPlateValidator
+
+
+LETTER_FIX = {
+    "0": "O",
+    "1": "I",
+    "2": "Z",
+    "5": "S",
+    "8": "B",
+}
+
+
+DIGIT_FIX = {
+    "O": "0",
+    "I": "1",
+    "Z": "2",
+    "S": "5",
+    "B": "8",
+}
+
 
 class NumberPlateParser:
 
     @staticmethod
-    def parse(text: str):
+    def clean(text):
 
-        if not text:
-            return None
-
-        # -----------------------
-        # Step 1 : Clean
-        # -----------------------
-        text = (
+        return (
             text.upper()
             .replace(" ", "")
             .replace("-", "")
             .replace(".", "")
         )
 
+    @staticmethod
+    def fix_letters(text):
 
-        chars = list(text)
+        result = ""
 
-        # -----------------------
-        # Step 2 : Fix State Code
-        # First 2 characters must be letters
-        # -----------------------
+        for ch in text:
+            result += LETTER_FIX.get(ch, ch)
 
-        for i in range(min(2, len(chars))):
+        return result
 
-            if chars[i] == "0":
-                chars[i] = "O"
+    @staticmethod
+    def fix_digits(text):
 
-            elif chars[i] == "1":
-                chars[i] = "I"
+        result = ""
 
-            elif chars[i] == "8":
-                chars[i] = "B"
+        for ch in text:
+            result += DIGIT_FIX.get(ch, ch)
 
-        # -----------------------
-        # Step 3 : District Number
-        # Next 2 characters must be digits
-        # -----------------------
+        return result
 
-        for i in range(2, min(4, len(chars))):
+    @staticmethod
+    def parse(text):
 
-            if chars[i] == "O":
-                chars[i] = "0"
+        if not text:
+            return None
 
-            elif chars[i] == "I":
-                chars[i] = "1"
+        text = NumberPlateParser.clean(text)
 
-            elif chars[i] == "B":
-                chars[i] = "8"
+        # -----------------------------
+        # If OCR is already correct,
+        # NEVER modify it.
+        # -----------------------------
 
-            elif chars[i] == "S":
-                chars[i] = "5"
+        if IndianPlateValidator.is_valid(text):
+            return text
 
-        # -----------------------
-        # Step 4 : Series
-        # Usually next 1-3 letters
-        # -----------------------
+        # -----------------------------
+        # Find last 3 or 4 digits
+        # -----------------------------
 
-        for i in range(4, min(7, len(chars))):
+        match = re.search(r"(\d{3,4})$", text)
 
-            if chars[i] == "0":
-                chars[i] = "O"
+        if not match:
+            return None
 
-            elif chars[i] == "1":
-                chars[i] = "I"
+        number = match.group()
 
-            elif chars[i] == "8":
-                chars[i] = "B"
+        prefix = text[:-len(number)]
 
-        # -----------------------
-        # Step 5 : Last Numbers
-        # Remaining characters should be digits
-        # -----------------------
+        if len(prefix) < 5:
+            return None
 
-        for i in range(7, len(chars)):
+        state = prefix[:2]
 
-            if chars[i] == "O":
-                chars[i] = "0"
+        district = ""
 
-            elif chars[i] == "I":
-                chars[i] = "1"
+        series = ""
 
-            elif chars[i] == "B":
-                chars[i] = "8"
+        for ch in prefix[2:]:
 
-            elif chars[i] == "S":
-                chars[i] = "5"
+            if ch.isdigit():
 
-            elif chars[i] == "Z":
-                chars[i] = "2"
+                district += ch
 
-        corrected = "".join(chars)
+            else:
 
-        # -----------------------
-        # Step 6 : Validate
-        # -----------------------
+                series += ch
 
-        pattern = (
-            r"[A-Z]{2}"
-            r"[0-9]{1,2}"
-            r"[A-Z]{1,3}"
-            r"[0-9]{3,4}"
+        state = NumberPlateParser.fix_letters(state)
+
+        district = NumberPlateParser.fix_digits(district)
+
+        series = NumberPlateParser.fix_letters(series)
+
+        number = NumberPlateParser.fix_digits(number)
+
+        candidate = (
+            state +
+            district +
+            series +
+            number
         )
 
-        match = re.search(pattern, corrected)
+        if IndianPlateValidator.is_valid(candidate):
 
-        if match:
-
-            vehicle_no = match.group()
-
-
-            return vehicle_no
-
+            return candidate
 
         return None

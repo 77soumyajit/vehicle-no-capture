@@ -1,5 +1,6 @@
-import cv2
 import os
+import cv2
+import numpy as np
 
 
 class ImageVariants:
@@ -16,116 +17,101 @@ class ImageVariants:
 
         paths = []
 
-        # -------------------------
-        # Original
-        # -------------------------
+        def save(name, img):
+            path = f"cropped/{name}.jpg"
+            cv2.imwrite(path, img)
+            paths.append(path)
 
-        original = "cropped/variant_original.jpg"
-
-        cv2.imwrite(
-            original,
-            image
-        )
-
-        paths.append(original)
-
-        # -------------------------
-        # Upscale 2x
-        # -------------------------
+        save("variant_original", image)
 
         upscaled = cv2.resize(
-
             image,
-
             None,
-
             fx=2,
-
             fy=2,
-
-            interpolation=cv2.INTER_CUBIC
-
+            interpolation=cv2.INTER_CUBIC,
         )
 
-        upscale_path = "cropped/variant_upscale.jpg"
-
-        cv2.imwrite(
-            upscale_path,
-            upscaled
-        )
-
-        paths.append(upscale_path)
-
-        # -------------------------
-        # Gray
-        # -------------------------
+        save("variant_upscale", upscaled)
 
         gray = cv2.cvtColor(
             image,
-            cv2.COLOR_BGR2GRAY
+            cv2.COLOR_BGR2GRAY,
         )
 
-        gray_path = "cropped/variant_gray.jpg"
+        save("variant_gray", gray)
 
-        cv2.imwrite(
-            gray_path,
-            gray
+        clahe = cv2.createCLAHE(
+            clipLimit=2.0,
+            tileGridSize=(8, 8),
         )
 
-        paths.append(gray_path)
+        clahe_img = clahe.apply(gray)
 
-        # -------------------------
-        # Adaptive Threshold
-        # -------------------------
+        save("variant_clahe", clahe_img)
 
-        thresh = cv2.adaptiveThreshold(
-
-            gray,
-
-            255,
-
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-
-            cv2.THRESH_BINARY,
-
-            21,
-
-            10
-
-        )
-
-        thresh_path = "cropped/variant_threshold.jpg"
-
-        cv2.imwrite(
-            thresh_path,
-            thresh
-        )
-
-        paths.append(thresh_path)
-
-        # -------------------------
-        # Bilateral Filter
-        # -------------------------
-
-        smooth = cv2.bilateralFilter(
-
-            gray,
-
+        bilateral = cv2.bilateralFilter(
+            clahe_img,
             9,
-
             75,
-
-            75
-
+            75,
         )
 
-        smooth_path = "cropped/variant_bilateral.jpg"
+        save("variant_bilateral", bilateral)
 
-        cv2.imwrite(
-            smooth_path,
-            smooth
+        kernel = np.array(
+            [
+                [0, -1, 0],
+                [-1, 5, -1],
+                [0, -1, 0],
+            ],
+            dtype=np.float32,
         )
 
-        paths.append(smooth_path)
+        sharpen = cv2.filter2D(
+            bilateral,
+            -1,
+            kernel,
+        )
+
+        save("variant_sharpen", sharpen)
+
+        adaptive = cv2.adaptiveThreshold(
+            sharpen,
+            255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY,
+            21,
+            10,
+        )
+
+        save("variant_adaptive", adaptive)
+
+        _, otsu = cv2.threshold(
+            sharpen,
+            0,
+            255,
+            cv2.THRESH_BINARY + cv2.THRESH_OTSU,
+        )
+
+        save("variant_otsu", otsu)
+
+        contrast = cv2.convertScaleAbs(
+            gray,
+            alpha=1.6,
+            beta=10,
+        )
+
+        save("variant_contrast", contrast)
+
+        morph_kernel = np.ones((2, 2), np.uint8)
+
+        morph = cv2.morphologyEx(
+            adaptive,
+            cv2.MORPH_CLOSE,
+            morph_kernel,
+        )
+
+        save("variant_morph", morph)
 
         return paths

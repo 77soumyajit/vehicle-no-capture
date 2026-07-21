@@ -20,23 +20,61 @@ function Home() {
     const [gatePass, setGatePass] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const [uploadedImage, setUploadedImage] = useState(null);
 
-    // -------------------------
     // Upload Success
-    // -------------------------
 
     const handleUploadSuccess = (data) => {
 
-        setUploadedImage(data);
+        console.log("AI Result:", data);
 
-        console.log(data);
+        // Clear previous state
+        setVehicle(null);
+        setGatePass(null);
+        setError("");
+        setShowRegistration(false);
+
+        switch (data.status) {
+
+            case "FOUND":
+
+                setVehicle(data.vehicle);
+
+                break;
+
+            case "NOT_FOUND":
+
+                setSearchedVehicleNo(data.vehicle_no);
+
+                setShowRegistration(true);
+
+                setError(
+                    `Vehicle ${data.vehicle_no} not found. Please register it.`
+                );
+
+                break;
+
+            case "PLATE_NOT_FOUND":
+
+                setError("No license plate detected in the uploaded image.");
+
+                break;
+
+            case "OCR_FAILED":
+
+                setError("Unable to read the vehicle number from the image.");
+
+                break;
+
+            default:
+
+                setError("Unknown response from AI.");
+
+        }
 
     };
 
-    // -------------------------
     // Search Vehicle
-    // -------------------------
+
 
     const searchVehicle = async (vehicleNo) => {
 
@@ -74,23 +112,16 @@ function Home() {
 
     };
 
-    // -------------------------
     // Vehicle Created
-    // -------------------------
 
     const handleVehicleCreated = (vehicle) => {
-
         setVehicle(vehicle);
-
         setShowRegistration(false);
-
         setError("");
-
+        setSearchedVehicleNo("");
     };
 
-    // -------------------------
     // Generate Gate Pass
-    // -------------------------
 
     const generateGatePass = async (vehicleId) => {
 
@@ -129,12 +160,10 @@ function Home() {
 
         <div className="main-container">
 
-            {/* ================= HEADER ================= */}
-
             <div className="header-card">
 
                 <h1 className="page-title">
-                    🚗 Vehicle Gate Management System
+                    Vehicle Gate Management System
                 </h1>
 
                 <p className="page-subtitle">
@@ -142,8 +171,6 @@ function Home() {
                 </p>
 
             </div>
-
-            {/* ================= STEP 1 ================= */}
 
             <div className="section-card">
 
@@ -173,8 +200,6 @@ function Home() {
 
             </div>
 
-            {/* ================= STEP 2 ================= */}
-
             <div className="section-card">
 
                 <div className="section-heading">
@@ -201,47 +226,7 @@ function Home() {
                     onUploadSuccess={handleUploadSuccess}
                 />
 
-                {
-
-                    uploadedImage && (
-
-                        <div className="alert alert-success mt-4">
-
-                            <h5>
-                                Image Uploaded Successfully
-                            </h5>
-
-                            <hr />
-
-                            <p>
-                                <strong>Image ID :</strong>{" "}
-                                {uploadedImage.id}
-                            </p>
-
-                            <p>
-                                <strong>Original Name :</strong>{" "}
-                                {uploadedImage.original_name}
-                            </p>
-
-                            <p>
-                                <strong>Stored Name :</strong>{" "}
-                                {uploadedImage.stored_name}
-                            </p>
-
-                            <p>
-                                <strong>OCR Status :</strong>{" "}
-                                {uploadedImage.ocr_status}
-                            </p>
-
-                        </div>
-
-                    )
-
-                }
-
             </div>
-
-            {/* ================= ERROR ================= */}
 
             {
 
@@ -256,8 +241,6 @@ function Home() {
                 )
 
             }
-
-            {/* ================= REGISTRATION ================= */}
 
             {
 
@@ -305,8 +288,6 @@ function Home() {
 
             }
 
-            {/* ================= VEHICLE ================= */}
-
             {
 
                 vehicle && (
@@ -353,8 +334,6 @@ function Home() {
 
             }
 
-            {/* ================= LOADING ================= */}
-
             {
 
                 loading && (
@@ -368,8 +347,6 @@ function Home() {
                 )
 
             }
-
-            {/* ================= GATE PASS ================= */}
 
             {
 

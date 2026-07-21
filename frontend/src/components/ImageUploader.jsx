@@ -12,12 +12,10 @@ function ImageUploader({ onUploadSuccess }) {
         if (!selected) return;
 
         setFile(selected);
-
         setPreview(URL.createObjectURL(selected));
     };
 
-    const uploadImage = async () => {
-
+    const processVehicle = async () => {
         if (!file) {
             alert("Please choose an image.");
             return;
@@ -25,14 +23,14 @@ function ImageUploader({ onUploadSuccess }) {
 
         const formData = new FormData();
 
-        formData.append("file", file);
+        // FastAPI expects "image"
+        formData.append("image", file);
 
         try {
-
             setUploading(true);
 
             const response = await api.post(
-                "/upload/image",
+                "/process-vehicle/",
                 formData,
                 {
                     headers: {
@@ -41,28 +39,32 @@ function ImageUploader({ onUploadSuccess }) {
                 }
             );
 
+            console.log("AI Response:", response.data);
+
+            // Send complete backend response to Home.jsx
             onUploadSuccess(response.data);
 
         } catch (err) {
-
             console.error(err);
 
-            alert("Upload failed.");
+            if (err.response) {
+                console.error(err.response.data);
+            }
+
+            alert("Unable to process vehicle image.");
 
         } finally {
-
             setUploading(false);
-
         }
     };
 
     return (
-        <div className="card mt-4">
+        <div className="card mt-4 shadow-sm">
 
-            <div className="card-header">
-
-                <h5>Upload Vehicle Image</h5>
-
+            <div className="card-header bg-primary text-white">
+                <h5 className="mb-0">
+                    AI Vehicle Scanner
+                </h5>
             </div>
 
             <div className="card-body">
@@ -70,27 +72,34 @@ function ImageUploader({ onUploadSuccess }) {
                 <input
                     type="file"
                     accept="image/*"
-                    onChange={handleFileChange}
                     className="form-control"
+                    onChange={handleFileChange}
                 />
 
                 {preview && (
+                    <div className="text-center mt-4">
 
-                    <img
-                        src={preview}
-                        alt="Preview"
-                        className="img-fluid mt-3 rounded"
-                        style={{ maxHeight: "300px" }}
-                    />
+                        <img
+                            src={preview}
+                            alt="Vehicle Preview"
+                            className="img-fluid rounded shadow"
+                            style={{
+                                maxHeight: "320px",
+                                objectFit: "contain",
+                            }}
+                        />
 
+                    </div>
                 )}
 
                 <button
-                    className="btn btn-primary mt-3 w-100"
-                    onClick={uploadImage}
+                    className="btn btn-success w-100 mt-4"
+                    onClick={processVehicle}
                     disabled={uploading}
                 >
-                    {uploading ? "Uploading..." : "Upload Image"}
+                    {uploading
+                        ? "🔍 Analyzing Vehicle..."
+                        : "🚗 Scan Vehicle"}
                 </button>
 
             </div>
