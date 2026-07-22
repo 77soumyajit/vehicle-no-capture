@@ -1,33 +1,59 @@
-import { useState } from "react";
-import { FaSearch, FaUpload, FaCarSide, FaIdCard } from "react-icons/fa";
+import { useState, useEffect } from "react";
 
 import api from "../services/api";
+
+import DashboardHeader from "../components/DashboardHeader";
+import StatsCards from "../components/StatsCards";
 
 import SearchBox from "../components/SearchBox";
 import ImageUploader from "../components/ImageUploader";
 import VehicleCard from "../components/VehicleCard";
-import GatePassCard from "../components/GatePassCard";
 import VehicleRegistrationForm from "../components/VehicleRegistrationForm";
+import GatePassCard from "../components/GatePassCard";
+
+import "../styles/dashboard.css";
 
 function Home() {
 
+    const [dashboard, setDashboard] = useState(null);
+
     const [vehicle, setVehicle] = useState(null);
+    const [gatePass, setGatePass] = useState(null);
+
     const [error, setError] = useState("");
 
-    const [showRegistration, setShowRegistration] = useState(false);
-    const [searchedVehicleNo, setSearchedVehicleNo] = useState("");
-
-    const [gatePass, setGatePass] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const [showRegistration, setShowRegistration] = useState(false);
 
-    // Upload Success
+    const [searchedVehicleNo, setSearchedVehicleNo] = useState("");
+
+    useEffect(() => {
+        loadDashboard();
+    }, []);
+
+    const loadDashboard = async () => {
+
+        try {
+
+            const response = await api.get("/dashboard");
+
+            setDashboard(response.data.summary);
+
+        } catch (err) {
+
+            console.log(err);
+
+        }
+
+    };
+
+    // -----------------------------
+    // AI Upload
+    // -----------------------------
 
     const handleUploadSuccess = (data) => {
 
-        console.log("AI Result:", data);
-
-        // Clear previous state
         setVehicle(null);
         setGatePass(null);
         setError("");
@@ -53,28 +79,31 @@ function Home() {
 
                 break;
 
-            case "PLATE_NOT_FOUND":
+            case "OCR_FAILED":
 
-                setError("No license plate detected in the uploaded image.");
+                setError("Unable to read vehicle number.");
 
                 break;
 
-            case "OCR_FAILED":
+            case "PLATE_NOT_FOUND":
 
-                setError("Unable to read the vehicle number from the image.");
+                setError("No number plate detected.");
 
                 break;
 
             default:
 
-                setError("Unknown response from AI.");
+                setError("Unknown response.");
 
         }
 
+        loadDashboard();
+
     };
 
-    // Search Vehicle
-
+    // -----------------------------
+    // Search
+    // -----------------------------
 
     const searchVehicle = async (vehicleNo) => {
 
@@ -84,44 +113,49 @@ function Home() {
 
             setVehicle(response.data);
 
-            setError("");
+            setGatePass(null);
 
             setShowRegistration(false);
 
-            setSearchedVehicleNo("");
-
-            setGatePass(null);
+            setError("");
 
         }
 
-        catch (error) {
-
-            console.error(error);
+        catch {
 
             setVehicle(null);
 
             setGatePass(null);
 
-            setError("Vehicle not found in database.");
-
             setShowRegistration(true);
 
             setSearchedVehicleNo(vehicleNo);
+
+            setError("Vehicle not found.");
 
         }
 
     };
 
-    // Vehicle Created
+    // -----------------------------
+    // Register
+    // -----------------------------
 
     const handleVehicleCreated = (vehicle) => {
+
         setVehicle(vehicle);
+
         setShowRegistration(false);
+
         setError("");
-        setSearchedVehicleNo("");
+
+        loadDashboard();
+
     };
 
-    // Generate Gate Pass
+    // -----------------------------
+    // Gate Pass
+    // -----------------------------
 
     const generateGatePass = async (vehicleId) => {
 
@@ -138,11 +172,11 @@ function Home() {
 
             setGatePass(response.data);
 
+            loadDashboard();
+
         }
 
-        catch (error) {
-
-            console.error(error);
+        catch {
 
             alert("Unable to generate gate pass.");
 
@@ -160,237 +194,125 @@ function Home() {
 
         <div className="main-container">
 
-            <div className="header-card">
+            <DashboardHeader />
 
-                <h1 className="page-title">
-                    Vehicle Gate Management System
-                </h1>
+            <StatsCards dashboard={dashboard} />
 
-                <p className="page-subtitle">
-                    AI Powered Vehicle Recognition & Gate Pass Generation
-                </p>
+            <div className="row g-4">
 
-            </div>
+                {/* LEFT PANEL */}
 
-            <div className="section-card">
+                <div className="col-lg-4">
 
-                <div className="section-heading">
+                    <div className="section-card mb-4">
 
-                    <div className="step">
-                        1
+                        <h4 className="mb-3">
+
+                            🔍 Search Vehicle
+
+                        </h4>
+
+                        <SearchBox
+                            onSearch={searchVehicle}
+                        />
+
                     </div>
 
-                    <div>
+                    <div className="section-card">
 
-                        <h3 className="section-title mb-0">
-                            Search Vehicle
-                        </h3>
+                        <h4 className="mb-3">
 
-                        <small className="text-muted">
-                            Search using Vehicle Number
-                        </small>
+                            🤖 AI Scanner
+
+                        </h4>
+
+                        <ImageUploader
+                            onUploadSuccess={handleUploadSuccess}
+                        />
 
                     </div>
 
                 </div>
 
-                <SearchBox
-                    onSearch={searchVehicle}
-                />
+                {/* RIGHT PANEL */}
 
-            </div>
+                <div className="col-lg-8">
 
-            <div className="section-card">
+                    {error && (
 
-                <div className="section-heading">
+                        <div className="alert alert-danger">
 
-                    <div className="step">
-                        2
-                    </div>
+                            {error}
 
-                    <div>
+                        </div>
 
-                        <h3 className="section-title mb-0">
-                            Upload Vehicle Image
-                        </h3>
+                    )}
 
-                        <small className="text-muted">
-                            Upload a number plate image for OCR
-                        </small>
+                    {showRegistration && (
 
-                    </div>
+                        <div className="section-card mb-4">
+
+                            <h4>
+
+                                Register Vehicle
+
+                            </h4>
+
+                            <VehicleRegistrationForm
+
+                                vehicleNumber={searchedVehicleNo}
+
+                                onVehicleCreated={handleVehicleCreated}
+
+                            />
+
+                        </div>
+
+                    )}
+
+                    {vehicle && (
+
+                        <div className="section-card mb-4">
+
+                            <VehicleCard
+
+                                vehicle={vehicle}
+
+                                onGenerate={generateGatePass}
+
+                            />
+
+                        </div>
+
+                    )}
+
+                    {loading && (
+
+                        <div className="alert alert-info">
+
+                            Generating Gate Pass...
+
+                        </div>
+
+                    )}
+
+                    {gatePass && (
+
+                        <div className="section-card">
+
+                            <GatePassCard
+
+                                gatePass={gatePass}
+
+                            />
+
+                        </div>
+
+                    )}
 
                 </div>
 
-                <ImageUploader
-                    onUploadSuccess={handleUploadSuccess}
-                />
-
             </div>
-
-            {
-
-                error && (
-
-                    <div className="alert alert-danger">
-
-                        {error}
-
-                    </div>
-
-                )
-
-            }
-
-            {
-
-                showRegistration && (
-
-                    <div className="section-card">
-
-                        <div className="section-heading">
-
-                            <div className="step">
-
-                                3
-
-                            </div>
-
-                            <div>
-
-                                <h3 className="section-title mb-0">
-
-                                    Register Vehicle
-
-                                </h3>
-
-                                <small className="text-muted">
-
-                                    Vehicle not found. Please register it.
-
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                        <VehicleRegistrationForm
-
-                            vehicleNumber={searchedVehicleNo}
-
-                            onVehicleCreated={handleVehicleCreated}
-
-                        />
-
-                    </div>
-
-                )
-
-            }
-
-            {
-
-                vehicle && (
-
-                    <div className="section-card">
-
-                        <div className="section-heading">
-
-                            <div className="step">
-
-                                3
-
-                            </div>
-
-                            <div>
-
-                                <h3 className="section-title mb-0">
-
-                                    Vehicle Information
-
-                                </h3>
-
-                                <small className="text-muted">
-
-                                    Registered Vehicle Details
-
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                        <VehicleCard
-
-                            vehicle={vehicle}
-
-                            onGenerate={generateGatePass}
-
-                        />
-
-                    </div>
-
-                )
-
-            }
-
-            {
-
-                loading && (
-
-                    <div className="alert alert-info">
-
-                        Generating Gate Pass...
-
-                    </div>
-
-                )
-
-            }
-
-            {
-
-                gatePass && (
-
-                    <div className="section-card">
-
-                        <div className="section-heading">
-
-                            <div className="step">
-
-                                4
-
-                            </div>
-
-                            <div>
-
-                                <h3 className="section-title mb-0">
-
-                                    Gate Pass
-
-                                </h3>
-
-                                <small className="text-muted">
-
-                                    Generated Successfully
-
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                        <GatePassCard
-
-                            gatePass={gatePass}
-
-                        />
-
-                    </div>
-
-                )
-
-            }
 
         </div>
 
