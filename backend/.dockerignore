@@ -1,0 +1,29 @@
+# Python
+venv
+__pycache__
+**/__pycache__
+**/*.pyc
+
+# Environment
+.env
+
+# Generated files
+uploads
+cropped
+runs
+
+# Caches
+.paddlex
+.cache
+
+# Backup & tests
+alembic_backup
+test_*.py
+
+# Git & editor
+.git
+.gitignore
+.vscode
+
+# Logs
+*.log

@@ -1,34 +1,29 @@
 from collections import defaultdict
+import logging
 import re
 
-from paddleocr import TextRecognition
+# from paddleocr import TextRecognition
 
 from app.utils.image_variants import ImageVariants
 from app.utils.number_plate_parser import NumberPlateParser
 
-model = TextRecognition(engine="paddle")
+logger = logging.getLogger(__name__)
 
+# model = TextRecognition(engine="paddle")
+from app.services.ocr_model import get_model
 
 class PlateReader:
 
     @staticmethod
     def calculate_score(vehicle, text, confidence):
-        """
-        Calculate a score for an OCR result.
-        Higher score = more trustworthy.
-        """
-
         score = confidence * 100
 
-        # Successfully parsed
         if vehicle:
             score += 20
 
-        # Expected Indian number plate length
         if vehicle and 8 <= len(vehicle) <= 10:
             score += 10
 
-        # Matches Indian registration pattern
         if vehicle and re.fullmatch(
             r"[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{3,4}",
             vehicle,
@@ -46,15 +41,13 @@ class PlateReader:
 
         for path in variants:
 
+            model = get_model()
             results = model.predict(input=path)
-            print("\n========== RAW OCR ==========")
-            print(results)
-            print("=============================\n")
+
             text = ""
             confidence = 0
 
             for res in results:
-
                 text = res.get("rec_text", "")
                 confidence = res.get("rec_score", 0)
 
@@ -73,14 +66,6 @@ class PlateReader:
                 confidence,
             )
 
-            print(
-                f"{path} -> "
-                f"OCR={text} "
-                f"Parsed={vehicle} "
-                f"Conf={confidence:.3f} "
-                f"Score={score:.2f}"
-            )
-
             candidates.append(
                 {
                     "vehicle": vehicle,
@@ -91,20 +76,14 @@ class PlateReader:
                 }
             )
 
-        # ------------------------------------------
-        # Voting System
-        # ------------------------------------------
-
         votes = defaultdict(list)
 
         for candidate in candidates:
-
             if candidate["vehicle"]:
-
                 votes[candidate["vehicle"]].append(candidate)
 
         if not votes:
-
+            logger.warning("No valid vehicle number detected.")
             return {
                 "vehicle_no": None,
                 "ocr_text": "",
@@ -118,8 +97,6 @@ class PlateReader:
         highest_vote = -1
         highest_score = -1
 
-        print("\n========== OCR Voting ==========")
-
         for vehicle, items in votes.items():
 
             vote_count = len(items)
@@ -132,12 +109,6 @@ class PlateReader:
             max_confidence = max(
                 i["confidence"]
                 for i in items
-            )
-
-            print(
-                f"{vehicle}"
-                f" | Votes={vote_count}"
-                f" | AvgScore={average_score:.2f}"
             )
 
             if (
@@ -159,17 +130,17 @@ class PlateReader:
                     key=lambda x: x["score"],
                 )["ocr_text"]
 
-        print("===============================\n")
+        logger.info(
+            "Vehicle detected: %s (%.2f%%)",
+            best_vehicle,
+            best_confidence * 100,
+        )
 
         return {
-
             "vehicle_no": best_vehicle,
-
             "ocr_text": best_text,
-
             "confidence": round(
                 best_confidence * 100,
                 2,
             ),
-
         }

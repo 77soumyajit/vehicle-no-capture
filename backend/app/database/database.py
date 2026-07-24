@@ -5,7 +5,7 @@ from app.core.config import DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True  # Shows SQL queries in the terminal
+    echo=False  # Shows SQL queries in the terminal
 )
 
 SessionLocal = sessionmaker(

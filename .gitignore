@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+backend/venv/
+
+# Uploads
+backend/uploads/
+backend/cropped/
+
+# React
+frontend/node_modules/
+frontend/dist/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Environment
+.env
+backend/.env
+
+# Logs
+*.log
