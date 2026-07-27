@@ -7,6 +7,7 @@ from app.api.upload import router as upload_router
 from app.api.ocr import router as ocr_router
 from app.api.process_vehicle import router as process_vehicle_router
 from app.api.dashboard import router as dashboard_router
+from app.api.live_detect import router as live_detect_router
 # Import models so SQLAlchemy registers them
 import app.models
 
@@ -38,3 +39,4 @@ app.include_router(upload_router)
 app.include_router(ocr_router)
 app.include_router(process_vehicle_router)
 app.include_router(dashboard_router)
+app.include_router(live_detect_router)

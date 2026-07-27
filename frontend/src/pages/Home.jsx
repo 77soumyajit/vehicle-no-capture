@@ -13,6 +13,8 @@ import GatePassCard from "../components/GatePassCard";
 
 import "../styles/dashboard.css";
 
+import CameraScanner from "../components/CameraScanner";
+
 function Home() {
 
     const [dashboard, setDashboard] = useState(null);
@@ -227,6 +229,20 @@ function Home() {
                         </h4>
 
                         <ImageUploader
+                            onUploadSuccess={handleUploadSuccess}
+                        />
+
+                        <hr />
+
+                    </div>
+
+                    <div className="section-card mt-4">
+
+                        <h4 className="mb-3">
+                            📷 Live Camera Scanner
+                        </h4>
+
+                        <CameraScanner
                             onUploadSuccess={handleUploadSuccess}
                         />
 
