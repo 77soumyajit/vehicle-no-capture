@@ -1,11 +1,40 @@
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import declarative_base, sessionmaker
+
+# from app.core.config import settings
+
+# engine = create_engine(
+#     settings.DATABASE_URL,
+#     echo=False
+# )
+
+# SessionLocal = sessionmaker(
+#     autocommit=False,
+#     autoflush=False,
+#     bind=engine,
+# )
+
+# Base = declarative_base()
+
+
+# def get_db():
+#     db = SessionLocal()
+
+#     try:
+#         yield db
+#     finally:
+#         db.close()
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from app.core.config import DATABASE_URL
+from app.core.config import settings
 
 engine = create_engine(
-    DATABASE_URL,
-    echo=False  # Shows SQL queries in the terminal
+    settings.DATABASE_URL,
+    echo=False,
+    pool_pre_ping=True,
+    pool_recycle=300,
 )
 
 SessionLocal = sessionmaker(
@@ -16,9 +45,9 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
+
 def get_db():
     db = SessionLocal()
-
     try:
         yield db
     finally:
