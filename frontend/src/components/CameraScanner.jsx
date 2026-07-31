@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import api from "../services/api";
+// import api from "../services/api";
+import api from "../api/axios";
 
 function CameraScanner({ onUploadSuccess }) {
 

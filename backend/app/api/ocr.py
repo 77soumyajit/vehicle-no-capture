@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.repositories.upload_repository import UploadRepository
 from app.services.ocr_service import OCRService
+from app.core.dependencies import get_current_user
+from app.models.user import User
 
 router = APIRouter(
     prefix="/ocr",
@@ -12,7 +14,7 @@ router = APIRouter(
 
 
 @router.post("/detect")
-def detect(image_id: int, db: Session = Depends(get_db)):
+def detect(image_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     image = UploadRepository.get_by_id(db, image_id)
 

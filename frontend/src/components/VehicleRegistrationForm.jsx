@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";
-
+// import api from "../services/api";
+import api from "../api/axios";
 function VehicleRegistrationForm({ vehicleNumber, onVehicleCreated }) {
 
     const [loading, setLoading] = useState(false);

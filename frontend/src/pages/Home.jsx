@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
-import api from "../services/api";
+// import api from "../services/api";
+import api from "../api/axios";
 
 import DashboardHeader from "../components/DashboardHeader";
 import StatsCards from "../components/StatsCards";

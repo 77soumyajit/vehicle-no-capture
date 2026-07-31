@@ -9,6 +9,8 @@ from app.schemas.gate_pass import (
 )
 
 from app.services.gate_pass_service import GatePassService
+from app.core.dependencies import get_current_user
+from app.models.user import User
 
 router = APIRouter(
     prefix="/gate-pass",
@@ -22,7 +24,8 @@ router = APIRouter(
 )
 def generate_gate_pass(
     data: GatePassCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
 
     gate_pass = GatePassService.generate(
