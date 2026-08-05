@@ -1,10 +1,14 @@
 from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
+
+from jose import JWTError, jwt
 
 from app.core.config import settings
 
 
 class JWTService:
+    """
+    Service class for handling JWT-related operations.
+    """
 
     @staticmethod
     def create_access_token(data: dict):
@@ -47,14 +51,37 @@ class JWTService:
         )
 
     @staticmethod
-    def verify_token(token: str):
+    def verify_access_token(token: str):
 
         try:
+
             payload = jwt.decode(
                 token,
                 settings.SECRET_KEY,
                 algorithms=[settings.ALGORITHM],
             )
+
+            if payload.get("type") != "access":
+                return None
+
+            return payload
+
+        except JWTError:
+            return None
+
+    @staticmethod
+    def verify_refresh_token(token: str):
+
+        try:
+
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=[settings.ALGORITHM],
+            )
+
+            if payload.get("type") != "refresh":
+                return None
 
             return payload
 

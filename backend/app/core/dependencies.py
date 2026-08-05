@@ -13,12 +13,18 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
 ):
-    payload = JWTService.verify_token(credentials.credentials)
+    """
+    Validate the Access Token and return the current user.
+    """
+
+    payload = JWTService.verify_access_token(
+        credentials.credentials
+    )
 
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token.",
+            detail="Invalid or expired access token.",
         )
 
     user = UserRepository.get_by_id(

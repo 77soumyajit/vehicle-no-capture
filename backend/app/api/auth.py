@@ -5,6 +5,7 @@ from app.database.database import get_db
 from app.schemas.auth_schema import (
     RegisterRequest,
     LoginRequest,
+    RefreshTokenRequest,
     TokenResponse,
     UserResponse,
 )
@@ -52,6 +53,22 @@ def login(
         "refresh_token": result["refresh_token"],
         "token_type": result["token_type"],
     }
+
+
+@router.post("/refresh")
+def refresh_token(
+    request: RefreshTokenRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Generate a new access token using a valid refresh token.
+    """
+
+    return AuthService.refresh_access_token(
+        db,
+        request.refresh_token,
+    )
+
 
 @router.get(
     "/me",

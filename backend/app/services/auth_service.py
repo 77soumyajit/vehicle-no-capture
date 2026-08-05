@@ -12,6 +12,9 @@ from app.services.jwt_service import JWTService
 
 
 class AuthService:
+    """
+    Service class for handling authentication-related operations.
+    """
 
     @staticmethod
     def register(
@@ -98,5 +101,51 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
+            "token_type": "bearer",
+        }
+
+    @staticmethod
+    def refresh_access_token(
+        db: Session,
+        refresh_token: str,
+    ):
+        """
+        Validate refresh token and generate
+        a brand-new access token.
+        """
+
+        payload = JWTService.verify_refresh_token(
+            refresh_token
+        )
+
+        if payload is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired refresh token.",
+            )
+
+        user = UserRepository.get_by_id(
+            db,
+            payload["user_id"],
+        )
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found.",
+            )
+
+        new_payload = {
+            "sub": user.username,
+            "role": user.role,
+            "user_id": user.id,
+        }
+
+        access_token = JWTService.create_access_token(
+            new_payload
+        )
+
+        return {
+            "access_token": access_token,
             "token_type": "bearer",
         }

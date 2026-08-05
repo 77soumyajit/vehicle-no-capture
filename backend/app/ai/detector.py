@@ -1,9 +1,9 @@
 from pathlib import Path
-
 from ultralytics import YOLO
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 MODEL_PATH = BASE_DIR / "weights" / "plate_detector.pt"
+# MODEL_PATH = BASE_DIR / "weights" / "plate_detector_v2.pt"
 
 model = YOLO(str(MODEL_PATH))
 
