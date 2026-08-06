@@ -15,6 +15,7 @@ import GatePassCard from "../components/GatePassCard";
 import "../styles/dashboard.css";
 
 import CameraScanner from "../components/CameraScanner";
+import GatePassModal from "../components/GatePassModal";
 
 function Home() {
 
@@ -30,6 +31,7 @@ function Home() {
     const [showRegistration, setShowRegistration] = useState(false);
 
     const [searchedVehicleNo, setSearchedVehicleNo] = useState("");
+    const [showGatePassModal, setShowGatePassModal] = useState(false);
 
     useEffect(() => {
         loadDashboard();
@@ -174,7 +176,7 @@ function Home() {
             );
 
             setGatePass(response.data);
-
+            setShowGatePassModal(true);
             loadDashboard();
 
         }
@@ -320,6 +322,8 @@ function Home() {
                             <GatePassCard
 
                                 gatePass={gatePass}
+                                onPreview={() => setShowGatePassModal(true)}
+
 
                             />
 
@@ -330,6 +334,21 @@ function Home() {
                 </div>
 
             </div>
+            {
+                showGatePassModal && (
+
+                    <GatePassModal
+
+                        gatePass={gatePass}
+
+                        onClose={() =>
+                            setShowGatePassModal(false)
+                        }
+
+                    />
+
+                )
+            }
 
         </div>
 

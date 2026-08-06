@@ -1,0 +1,101 @@
+.gate-pass-modal .modal-dialog{
+    max-width: 800px;
+}
+
+.gate-pass-modal .modal-content{
+    border-radius:12px;
+}
+
+.gate-pass-body{
+    background:#f5f6f8;
+    padding:25px;
+}
+
+.gate-pass-template{
+    width:80%;
+    max-width:760px;
+    margin:auto;
+
+    background:#fff;
+
+    border:2px solid #222;
+
+    border-radius:10px;
+
+    padding:30px;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+
+.gate-pass-header{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.gate-pass-header h2{
+    font-weight:700;
+}
+
+.gate-pass-info{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:25px;
+}
+
+.gate-pass-table th{
+    width:35%;
+}
+
+.gate-pass-barcode{
+
+    margin-top:30px;
+
+    display:flex;
+
+    justify-content:center;
+
+    overflow:hidden;
+
+}
+
+.gate-pass-barcode svg{
+
+    max-width:100%;
+
+    height:auto;
+
+}
+
+.gate-pass-footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-top:55px;
+
+}
+
+.signature{
+
+    width:220px;
+
+    text-align:center;
+
+}
+
+.signature hr{
+
+    margin-bottom:8px;
+
+    border:1px solid #444;
+
+}
+
+.modal-footer{
+
+    justify-content:center;
+
+    gap:12px;
+
+}

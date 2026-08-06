@@ -1,4 +1,7 @@
-function GatePassCard({ gatePass }) {
+function GatePassCard({
+    gatePass,
+    onPreview,
+}) {
 
     if (!gatePass) return null;
 
@@ -17,38 +20,32 @@ function GatePassCard({ gatePass }) {
             <div className="card-body">
 
                 <p>
-                    <strong>Gate Pass No :</strong>
-                    {" "}
+                    <strong>Gate Pass No :</strong>{" "}
                     {gatePass.gate_pass_no}
                 </p>
 
                 <p>
-                    <strong>Vehicle No :</strong>
-                    {" "}
+                    <strong>Vehicle No :</strong>{" "}
                     {gatePass.vehicle.vehicle_no}
                 </p>
 
                 <p>
-                    <strong>Owner :</strong>
-                    {" "}
+                    <strong>Owner :</strong>{" "}
                     {gatePass.vehicle.owner_name}
                 </p>
 
                 <p>
-                    <strong>Driver :</strong>
-                    {" "}
+                    <strong>Driver :</strong>{" "}
                     {gatePass.vehicle.driver_name}
                 </p>
 
                 <p>
-                    <strong>Status :</strong>
-                    {" "}
+                    <strong>Status :</strong>{" "}
                     {gatePass.status}
                 </p>
 
                 <p>
-                    <strong>Entry Time :</strong>
-                    {" "}
+                    <strong>Entry Time :</strong>{" "}
                     {new Date(
                         gatePass.entry_time
                     ).toLocaleString()}
@@ -56,7 +53,7 @@ function GatePassCard({ gatePass }) {
 
                 <button
                     className="btn btn-primary w-100 mt-3"
-                    onClick={() => window.print()}
+                    onClick={onPreview}
                 >
                     Print Gate Pass
                 </button>
