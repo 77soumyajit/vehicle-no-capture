@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-// import api from "../services/api";
 import api from "../api/axios";
 
 import DashboardHeader from "../components/DashboardHeader";
@@ -31,10 +30,15 @@ function Home() {
     const [showRegistration, setShowRegistration] = useState(false);
 
     const [searchedVehicleNo, setSearchedVehicleNo] = useState("");
+
     const [showGatePassModal, setShowGatePassModal] = useState(false);
 
+    const [resetKey, setResetKey] = useState(0);
+
     useEffect(() => {
+
         loadDashboard();
+
     }, []);
 
     const loadDashboard = async () => {
@@ -53,15 +57,36 @@ function Home() {
 
     };
 
-    // -----------------------------
-    // AI Upload
-    // -----------------------------
+    const resetDashboard = () => {
+
+        setShowGatePassModal(false);
+
+        setGatePass(null);
+
+        setVehicle(null);
+
+        setError("");
+
+        setShowRegistration(false);
+
+        setSearchedVehicleNo("");
+
+        setLoading(false);
+
+        setResetKey(prev => prev + 1);
+
+        loadDashboard();
+
+    };
 
     const handleUploadSuccess = (data) => {
 
         setVehicle(null);
+
         setGatePass(null);
+
         setError("");
+
         setShowRegistration(false);
 
         switch (data.status) {
@@ -106,15 +131,13 @@ function Home() {
 
     };
 
-    // -----------------------------
-    // Search
-    // -----------------------------
-
     const searchVehicle = async (vehicleNo) => {
 
         try {
 
-            const response = await api.get(`/vehicle/${vehicleNo}`);
+            const response = await api.get(
+                `/vehicle/${vehicleNo}`
+            );
 
             setVehicle(response.data);
 
@@ -124,9 +147,7 @@ function Home() {
 
             setError("");
 
-        }
-
-        catch {
+        } catch {
 
             setVehicle(null);
 
@@ -142,10 +163,6 @@ function Home() {
 
     };
 
-    // -----------------------------
-    // Register
-    // -----------------------------
-
     const handleVehicleCreated = (vehicle) => {
 
         setVehicle(vehicle);
@@ -157,10 +174,6 @@ function Home() {
         loadDashboard();
 
     };
-
-    // -----------------------------
-    // Gate Pass
-    // -----------------------------
 
     const generateGatePass = async (vehicleId) => {
 
@@ -176,18 +189,16 @@ function Home() {
             );
 
             setGatePass(response.data);
+
             setShowGatePassModal(true);
+
             loadDashboard();
 
-        }
-
-        catch {
+        } catch {
 
             alert("Unable to generate gate pass.");
 
-        }
-
-        finally {
+        } finally {
 
             setLoading(false);
 
@@ -201,20 +212,21 @@ function Home() {
 
             <DashboardHeader />
 
-            <StatsCards dashboard={dashboard} />
+            <StatsCards
+                dashboard={dashboard}
+            />
 
-            <div className="row g-4">
-
-                {/* LEFT PANEL */}
+            <div
+                className="row g-4"
+                key={resetKey}
+            >
 
                 <div className="col-lg-4">
 
                     <div className="section-card mb-4">
 
                         <h4 className="mb-3">
-
                             🔍 Search Vehicle
-
                         </h4>
 
                         <SearchBox
@@ -226,9 +238,7 @@ function Home() {
                     <div className="section-card">
 
                         <h4 className="mb-3">
-
                             🤖 AI Scanner
-
                         </h4>
 
                         <ImageUploader
@@ -253,8 +263,6 @@ function Home() {
 
                 </div>
 
-                {/* RIGHT PANEL */}
-
                 <div className="col-lg-8">
 
                     {error && (
@@ -272,16 +280,18 @@ function Home() {
                         <div className="section-card mb-4">
 
                             <h4>
-
                                 Register Vehicle
-
                             </h4>
 
                             <VehicleRegistrationForm
 
-                                vehicleNumber={searchedVehicleNo}
+                                vehicleNumber={
+                                    searchedVehicleNo
+                                }
 
-                                onVehicleCreated={handleVehicleCreated}
+                                onVehicleCreated={
+                                    handleVehicleCreated
+                                }
 
                             />
 
@@ -297,7 +307,9 @@ function Home() {
 
                                 vehicle={vehicle}
 
-                                onGenerate={generateGatePass}
+                                onGenerate={
+                                    generateGatePass
+                                }
 
                             />
 
@@ -322,8 +334,10 @@ function Home() {
                             <GatePassCard
 
                                 gatePass={gatePass}
-                                onPreview={() => setShowGatePassModal(true)}
 
+                                onPreview={() =>
+                                    setShowGatePassModal(true)
+                                }
 
                             />
 
@@ -334,21 +348,22 @@ function Home() {
                 </div>
 
             </div>
-            {
-                showGatePassModal && (
 
-                    <GatePassModal
+            {showGatePassModal && (
 
-                        gatePass={gatePass}
+                <GatePassModal
 
-                        onClose={() =>
-                            setShowGatePassModal(false)
-                        }
+                    gatePass={gatePass}
 
-                    />
+                    onClose={() =>
+                        setShowGatePassModal(false)
+                    }
 
-                )
-            }
+                    onCompleted={resetDashboard}
+
+                />
+
+            )}
 
         </div>
 

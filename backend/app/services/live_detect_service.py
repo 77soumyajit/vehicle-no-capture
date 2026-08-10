@@ -1,68 +1,152 @@
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session
 
-from app.services.upload_service import UploadService
+# from app.services.upload_service import UploadService
+# from app.ai.detector import PlateDetector
+
+
+# class LiveDetectService:
+
+#     @staticmethod
+#     def detect(db: Session, image):
+
+#         # Upload image
+#         uploaded = UploadService.upload_image(
+#             db,
+#             image,
+#         )
+
+#         # Run YOLO
+#         results = PlateDetector.detect(
+#             uploaded.image_path
+#         )
+
+#         best_confidence = 0.0
+
+#         for result in results:
+
+#             if result.boxes is None:
+#                 continue
+
+#             if len(result.boxes) == 0:
+#                 continue
+
+#             for box in result.boxes:
+
+#                 confidence = float(box.conf[0])
+
+#                 if confidence > best_confidence:
+#                     best_confidence = confidence
+
+#         if best_confidence > 0:
+
+#             return {
+
+#                 "status": "PLATE_FOUND",
+
+#                 "plate_detected": True,
+
+#                 "confidence": round(best_confidence * 100, 2),
+
+#                 "image_id": uploaded.id,
+
+#                 "image_path": uploaded.image_path,
+
+#             }
+
+#         return {
+
+#             "status": "PLATE_NOT_FOUND",
+
+#             "plate_detected": False,
+
+#             "confidence": 0,
+
+#             "image_id": uploaded.id,
+
+#             "image_path": uploaded.image_path,
+
+#         }
+
+
+
+import os
+import tempfile
+
 from app.ai.detector import PlateDetector
 
 
 class LiveDetectService:
 
     @staticmethod
-    def detect(db: Session, image):
+    def detect(image):
 
-        # Upload image
-        uploaded = UploadService.upload_image(
-            db,
-            image,
-        )
+        temp_path = None
 
-        # Run YOLO
-        results = PlateDetector.detect(
-            uploaded.image_path
-        )
+        try:
 
-        best_confidence = 0.0
+            image_data = image.file.read()
 
-        for result in results:
+            if not image_data:
+                return {
+                    "status": "INVALID_IMAGE",
+                    "plate_detected": False,
+                    "confidence": 0,
+                }
 
-            if result.boxes is None:
-                continue
+            with tempfile.NamedTemporaryFile(
+                delete=False,
+                suffix=".jpg"
+            ) as temp_file:
 
-            if len(result.boxes) == 0:
-                continue
+                temp_file.write(image_data)
+                temp_path = temp_file.name
 
-            for box in result.boxes:
+            results = PlateDetector.detect(
+                temp_path
+            )
 
-                confidence = float(box.conf[0])
+            best_confidence = 0.0
 
-                if confidence > best_confidence:
-                    best_confidence = confidence
+            for result in results:
 
-        if best_confidence > 0:
+                if result.boxes is None:
+                    continue
+
+                if len(result.boxes) == 0:
+                    continue
+
+                for box in result.boxes:
+
+                    confidence = float(
+                        box.conf[0]
+                    )
+
+                    if confidence > best_confidence:
+                        best_confidence = confidence
+
+            if best_confidence > 0:
+
+                return {
+                    "status": "PLATE_FOUND",
+                    "plate_detected": True,
+                    "confidence": round(
+                        best_confidence * 100,
+                        2
+                    ),
+                }
 
             return {
-
-                "status": "PLATE_FOUND",
-
-                "plate_detected": True,
-
-                "confidence": round(best_confidence * 100, 2),
-
-                "image_id": uploaded.id,
-
-                "image_path": uploaded.image_path,
-
+                "status": "PLATE_NOT_FOUND",
+                "plate_detected": False,
+                "confidence": 0,
             }
 
-        return {
+        finally:
 
-            "status": "PLATE_NOT_FOUND",
+            if temp_path and os.path.exists(temp_path):
 
-            "plate_detected": False,
+                try:
+                    os.remove(temp_path)
 
-            "confidence": 0,
-
-            "image_id": uploaded.id,
-
-            "image_path": uploaded.image_path,
-
-        }
+                except OSError:
+                    pass

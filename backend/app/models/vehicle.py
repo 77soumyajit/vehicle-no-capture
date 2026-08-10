@@ -1,6 +1,11 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String,DateTime
+
+from sqlalchemy.sql import func
+
 
 from app.database.database import Base
+
+
 
 
 class Vehicle(Base):
@@ -21,3 +26,5 @@ class Vehicle(Base):
     manufacturer = Column(String(100), nullable=True)
 
     color = Column(String(50), nullable=True)
+
+    created_at = Column(DateTime, server_default=func.now())

@@ -8,6 +8,7 @@ import {
 function GatePassModal({
     gatePass,
     onClose,
+    onCompleted,
 }) {
 
     if (!gatePass) return null;
@@ -18,9 +19,11 @@ function GatePassModal({
 
             await downloadGatePass();
 
-        }
+            if (onCompleted) {
+                onCompleted();
+            }
 
-        catch (err) {
+        } catch (err) {
 
             console.error(
                 "PDF Download Failed",
@@ -41,9 +44,11 @@ function GatePassModal({
 
             await printGatePass();
 
-        }
+            if (onCompleted) {
+                onCompleted();
+            }
 
-        catch (err) {
+        } catch (err) {
 
             console.error(
                 "Print Failed",
@@ -75,9 +80,7 @@ function GatePassModal({
                     <div className="modal-header">
 
                         <h4 className="modal-title">
-
                             Gate Pass Preview
-
                         </h4>
 
                         <button
@@ -101,27 +104,21 @@ function GatePassModal({
                             className="btn btn-secondary"
                             onClick={onClose}
                         >
-
                             Close
-
                         </button>
 
                         <button
                             className="btn btn-success"
                             onClick={handleDownload}
                         >
-
                             📄 Download PDF
-
                         </button>
 
                         <button
                             className="btn btn-primary"
                             onClick={handlePrint}
                         >
-
                             🖨 Print
-
                         </button>
 
                     </div>
